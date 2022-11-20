@@ -32,7 +32,7 @@ class Ajax_Fast_Publication_Post_Activator {
 	public static function activate() {
 		global $wpdb;
  		$table_name = $wpdb->prefix . 'fastpublication_publisher';
-		$tableinsert = "CREATE TABLE `wp`.`$table_name` ( `id` INT NOT NULL AUTO_INCREMENT , `name` VARCHAR(151) NOT NULL , `email` VARCHAR(151) NULL DEFAULT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB"; 
+		$tableinsert = "CREATE TABLE `$table_name` ( `id` INT NOT NULL AUTO_INCREMENT , `name` VARCHAR(151) NOT NULL , `email` VARCHAR(151) NULL DEFAULT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB"; 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		dbDelta( $tableinsert );
 	}

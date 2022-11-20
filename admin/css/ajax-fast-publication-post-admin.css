@@ -2,3 +2,62 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+
+.publisher_wrap{
+    max-width: 1000px;
+    width: 100%;
+    margin: auto;
+    padding: 20px;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.form_single{
+    width: 49%;
+    float: left;
+    overflow: hidden;
+    margin: 15px 0px;
+    margin-right: 2%
+}
+.form_single label {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	padding-bottom: 5px;
+}
+.form_single input:focus{
+    box-shadow: inherit;
+}
+.form_single:nth-child(2){
+    margin-right: 0;
+}
+.form_button{
+    width: 100%;
+    overflow: hidden;
+    text-align: center;
+}
+.form_button button:focus{
+    box-shadow: inherit !important;
+}
+.publisher_list{
+    padding-top: 30px;
+}
+.publish_error{
+    color: red;
+}
+.insert_success {
+	color: green;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
+
+

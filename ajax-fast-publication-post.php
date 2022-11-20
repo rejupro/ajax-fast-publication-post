@@ -64,6 +64,8 @@ register_deactivation_hook( __FILE__, 'deactivate_ajax_fast_publication_post' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-ajax-fast-publication-post.php';
 
+
+
 /**
  * Begins execution of the plugin.
  *

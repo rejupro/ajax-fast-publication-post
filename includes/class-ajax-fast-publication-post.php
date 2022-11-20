@@ -122,6 +122,11 @@ class Ajax_Fast_Publication_Post {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ajax-fast-publication-post-public.php';
 
+		/**
+		 * The class for publication custom post type.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/Fast_Publication_Post.php';
+
 		$this->loader = new Ajax_Fast_Publication_Post_Loader();
 
 	}
