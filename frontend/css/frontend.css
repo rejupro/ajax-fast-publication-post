@@ -1,0 +1,49 @@
+/* Publication Design */
+.fast-publication-gridpost{
+	overflow: hidden;
+	padding: 15px 0px;
+	grid-template-columns: repeat(3, 1fr);
+	display: grid;
+	grid-gap: 20px;
+}
+.fast_publication_item{
+    padding: 15px;
+    border: 1px solid #E0E0E0;
+    border-radius: 10px;
+    position: relative
+}
+.fast_publication_img{
+    height: 350px;
+    position: relative;
+    background: #ddd
+}
+.fast_publication_img img{
+    height: 100% !important;
+    width: 100%;
+}
+.fast_publication_img .fast_publication_text{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background: #00000050
+}
+
+
+
+
+.fast-loadmore-area{
+    text-align: center;
+}
+.fast_load_more {
+	padding: 10px;
+	background: green;
+	color: #ffffff;
+	width: 200px;
+	display: inline-block;
+	text-align: center;
+	margin: auto;
+    border-radius: 5px;
+    cursor: pointer;
+}
