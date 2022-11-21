@@ -33,14 +33,21 @@ class Fast_Publication_Post
         // Add Publisher Page
         add_action('admin_menu', array( $this, 'publication_publisher_callback' ));
 
-        // Load Ajax. 
+        // Data Insert. 
         add_action('wp_ajax_fast_publication_submit', array( $this, 'fast_publication_submit' ));
         add_action('wp_ajax_nopriv_fast_publication_submit', array( $this, 'fast_publication_submit' ));
-        
 
+        // Edit Data 
+        add_action('wp_ajax_fast_publication_edit', array( $this, 'fast_publication_edit' ));
+        add_action('wp_ajax_nopriv_fast_publication_edit', array( $this, 'fast_publication_edit' ));
 
-        // Load Ajax. 
-        // add_action('wp_ajax_fast_ajax_searchresult', array( $this, 'fast_ajax_searchresult' ));
+        // Update Data 
+        add_action('wp_ajax_fast_publication_update', array( $this, 'fast_publication_update' ));
+        add_action('wp_ajax_nopriv_fast_publication_update', array( $this, 'fast_publication_update' ));
+
+        // Load Post Meta
+        add_action('add_meta_boxes', array( $this, 'add_meta_box' ));
+        add_action('save_post',      array( $this, 'save' ));
     }
 
 
@@ -81,7 +88,7 @@ class Fast_Publication_Post
             'label'                 => __( 'Publication Post', 'ajax-fast-publication-post' ),
             'description'           => __( 'Post Type Description', 'ajax-fast-publication-post' ),
             'labels'                => $labels,
-            'supports'              => array( 'title', 'editor', 'thumbnail' ),
+            'supports'              => array( 'title', 'editor', 'thumbnail', 'author' ),
             'taxonomies'            => array(),
             'hierarchical'          => false,
             'public'                => true,
@@ -142,32 +149,218 @@ class Fast_Publication_Post
 
             $name = $_POST['name'];
             $email = $_POST['email'];
-            
+
             global $wpdb;
             $table = $wpdb->prefix.'fastpublication_publisher';
-            $data = array(
-                'name' => $name,
-                'email' => $email
-            );
-            $format = array('%s','%s');
-            $wpdb->insert($table,$data,$format);
-            $data = array(
-                'message'  => 'Publisher Inserted Successfully',
-            );
-            wp_send_json($data);
-
+            
+            $result = $wpdb->get_row("SELECT * FROM $table WHERE email = '$email'");
+            if($result == null){
+                $data = array(
+                    'name' => $name,
+                    'email' => $email
+                );
+                $format = array('%s','%s');
+                $wpdb->insert($table,$data,$format);
+                $data = array(
+                    'message'  => 'Publisher Inserted Successfully',
+                );
+                wp_send_json($data);
+            }else{
+                $data = array(
+                    'message_error'  => 'This Email Already Exist',
+                );
+                wp_send_json($data);
+            }
         endif;
     }
+
+    // Edit Data
+    function fast_publication_edit(){
+        $id = $_POST['editid'];
+        global $wpdb;
+        $table = $wpdb->prefix.'fastpublication_publisher';
+        $data = $wpdb->get_row ("SELECT * FROM $table WHERE `id` = $id ");
+        wp_send_json($data);
+    }
+
+    // Update Data
+    function fast_publication_update(){
+        $id = $_POST['id'];
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+
+        global $wpdb;
+        $table = $wpdb->prefix.'fastpublication_publisher';
+        
+        $result = $wpdb->get_results("SELECT * FROM $table WHERE email = '$email'");
+        $length = sizeof($result);
+        
+        
+        if($length < 2){
+            
+            $wpdb->update( $table ,array( 
+                'name' => $name,
+                'email' => $email, 
+            ), array( 'id' => $id ) );
+
+            $data = array(
+                'message'  => 'Publisher Updated Successfully',
+            );
+            wp_send_json($data);
+        }else{
+            $data = array(
+                'message_error'  => 'This Email Already Exist',
+            );
+            wp_send_json($data);
+        }
+    }
+
+    /**
+     * Adds the meta box container.
+     */
+    public function add_meta_box( $post_type ) {
+        // Limit meta box to certain post types.
+        $post_types = array( 'publication_post' );
+
+        if ( in_array($post_type, $post_types) ) {
+            add_meta_box(
+                'some_meta_box_name',
+                __('Publication URL & Publisher Option', 'ajax-fast-publication-post'),
+                array( $this, 'render_meta_box_content' ),
+                $post_type,
+                'advanced',
+                'high'
+            );
+        }
+    }
+
+    /**
+     * Save the meta when the post is saved.
+     *
+     * @param int $post_id The ID of the post being saved.
+     */
+    public function save( $post_id ) {
+
+        /*
+	         * We need to verify this came from the our screen and with proper authorization,
+	         * because save_post can be triggered at other times.
+	         */
+
+        // Check if our nonce is set.
+        if ( ! isset($_POST['fasttestimonial_inner_custom_box_nonce']) ) {
+            return $post_id;
+        }
+
+        $nonce = sanitize_text_field(wp_unslash($_POST['fasttestimonial_inner_custom_box_nonce'] ?? ''));
+
+        // Verify that the nonce is valid.
+        if ( ! wp_verify_nonce($nonce, 'fasttestimonial_inner_custom_box') ) {
+            return $post_id;
+        }
+
+        /*
+	         * If this is an autosave, our form has not been submitted,
+	         * so we don't want to do anything.
+	         */
+        if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+            return $post_id;
+        }
+
+        /* OK, it's safe for us to save the data now. */
+
+        // Sanitize the user input.
+        $publication_url = sanitize_text_field(wp_unslash($_POST['publication_url'] ?? ''));
+        // Sanitize the user input.
+        $publication_publisher = sanitize_text_field(wp_unslash($_POST['publication_publisher'] ?? ''));
+
+        // Update the meta field.
+        update_post_meta($post_id, '_publication_url', $publication_url);
+        update_post_meta($post_id, '_publication_publisher', $publication_publisher);
+    }
+
+
+    /**
+     * Render Meta Box content.
+     *
+     * @param WP_Post $post The post object.
+     */
+    public function render_meta_box_content( $post ) {
+
+        // Add an nonce field so we can check for it later.
+        wp_nonce_field('fasttestimonial_inner_custom_box', 'fasttestimonial_inner_custom_box_nonce');
+
+        // Use get_post_meta to retrieve an existing value from the database.
+        $publication_url = get_post_meta($post->ID, '_publication_url', true);
+        $publication_publisher = get_post_meta($post->ID, '_publication_publisher', true);
+
+        // Display the form, using the current value.
+        ?>
+        <label for="publication_url">
+            <?php esc_html_e('Publication PDF url', 'fast-testimonial'); ?>
+        </label>
+        <input class="widefat" type="text" id="publication_url" name="publication_url" value="<?php echo esc_attr($publication_url); ?>" size="25" />
+
+        <br><br>
+
+        <label for="publication_publisher">
+            <?php esc_html_e('Select Publisher', 'fast-testimonial'); ?>
+        </label>
+
+        <select class="widefat" name="publication_publisher">
+            <option value="" selected="" disabled>Select Publisher</option>
+            <?php
+            global $wpdb;
+            $table = $wpdb->prefix.'fastpublication_publisher';
+            $datas = $wpdb->get_results ( "SELECT * FROM $table ORDER BY id DESC");
+            foreach($datas as $single) :
+            ?>
+            <option <?php if ( $single->id == $publication_publisher ) echo "selected='selected'"; ?> value="<?php echo $single->id?>"><?php echo $single->name . ' - ' . $single->email ; ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <?php
+    }
+
+
 
 
     public function fast_testminial_load_shortcode_callback() {
 
         ob_start(); 
-        
+
+        $args = array(
+            'taxonomy' => 'publication_categories',
+            'orderby' => 'name',
+            'order'   => 'ASC'
+        );
+
+        $cats = get_categories($args);
+            echo "<pre>";
+            // print_r($cats);
         ?>
+        <?php
+            $args = array(
+                'post_type' => 'publication_post',
+                'post_status' => 'publish',
+                'posts_per_page' => 8,
+                'order' => 'ASC',
+                'meta_key' => '_publication_publisher',
+                'meta_value' => 2
+                
+                // 'tax_query' => array(
+                //     array(
+                //       'taxonomy' => 'publication_categories',
+                //       'field' => 'id',
+                //       'terms' => 31 
+                //     )
+                // )
+            );
 
-        <h2>Hello World</h2>
+            $loop = new WP_Query($args);
 
+            while ( $loop->have_posts() ) : $loop->the_post(); ?>
+            <h2><?php echo the_title(); ?></h2>
+            <?php endwhile ; ?>
         <?php $allcontents = ob_get_contents(); ?>
         <?php ob_get_clean();
         return $allcontents;
@@ -188,6 +381,9 @@ class Fast_Publication_Post
         wp_enqueue_script('jquery');
         wp_enqueue_script('publisher-submit', plugin_dir_url(__DIR__) . 'admin/js/ajax-fast-publication-post-admin.js', array( 'jquery' ), AJAX_FAST_PUBLICATION_POST_VERSION, true);
         wp_localize_script('publisher-submit', 'publisherSubmit', array('ajaxurl' => admin_url('admin-ajax.php')));
+        wp_localize_script('publisher-submit', 'publisherTable', array('ajaxurl' => admin_url('admin-ajax.php')));
+        wp_localize_script('publisher-submit', 'editData', array('ajaxurl' => admin_url('admin-ajax.php')));
+        wp_localize_script('publisher-submit', 'updateData', array('ajaxurl' => admin_url('admin-ajax.php')));
     }
 }
 

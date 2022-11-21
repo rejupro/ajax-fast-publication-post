@@ -1,8 +1,9 @@
 <div class="wrap">
     <div class="publisher_wrap">
         <h2>Publisher Options</h2>
+        <span class="insert_success"></span>
+        <span class="insert_error"></span>
         <form action="" autocomplete="off" id="submit_publisher">
-            <span class="insert_success"></span>
             <div class="publisher_form">
                 <div class="form_single">
                     <label for="name">Publisher Name</label>
@@ -19,6 +20,25 @@
                 </div>
             </div>
         </form>
+        <form action="" autocomplete="off" id="update_publisher">
+            <div class="publisher_form">
+                <div class="form_single">
+                    <input type="hidden" val="" id="update_id">
+                    <label for="name">Publisher Name</label>
+                    <input type="text" class="widefat" name="name_update" id="name_update" >
+                    <span class="publish_error" id="name_error2"></span>
+                </div>
+                <div class="form_single">
+                    <label for="email">Publisher Email</label>
+                    <input type="text" class="widefat" name="email_update" id="email_update" >
+                    <span class="publish_error" id="email_error2"></span>
+                </div>
+                <div class="form_button form_button2">
+                    <a class="button button-warning button-large" id="cancel">Cancel</a>
+                    <button class="button button-primary button-large" id="update">Update</button>
+                </div>
+            </div>
+        </form>
         <div class="publisher_list">
             <h2>Publisher List</h2>
             <table class="wp-list-table widefat fixed striped table-view-list posts">
@@ -31,18 +51,21 @@
                     </tr>
                 </thead>
                 <tbody id="show_publisher">
-                    <tr>
-                        <td>1</td>
-                        <td>Rakib</td>
-                        <td>rakib@gmail.com</td>
-                        <td><a href="#" class="button button-warning button-large">Edit</a></td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Shakib</td>
-                        <td>shakib@gmail.com</td>
-                        <td><a href="#" class="button button-warning button-large">Edit</a></td>
-                    </tr>
+                    <?php
+                        global $wpdb;
+                        $table = $wpdb->prefix.'fastpublication_publisher';
+                        $datas = $wpdb->get_results ( "SELECT * FROM $table ORDER BY id DESC");
+                        $i = 1;
+                        foreach($datas as $single) :
+                    ?>
+                        <tr>
+                            <td><?php echo $i++ ; ?></td>
+                            <td><?php echo $single->name ; ?></td>
+                            <td><?php echo $single->email ; ?></td>
+                            <td><a href="#" class="button button-warning button-large editPublisher" this-id="<?php echo $single->id; ?>">Edit</a></td>
+                        </tr>
+
+                    <?php endforeach ?>
                 </tbody>
             </table>
         </div>
