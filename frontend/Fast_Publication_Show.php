@@ -219,7 +219,7 @@ class Fast_Publication_Show
             </div><!--
         --></div><!--
         --><div class="fast-loadmore-area"><!--
-            --><p class="fast_load_more">Load More Publications</p><!--
+            --><p class="fast_load_more" data-page="1">Load More Publications</p><!--
         --></div>
         <?php $allcontents = ob_get_contents(); ?>
         <?php ob_get_clean();
@@ -234,7 +234,7 @@ class Fast_Publication_Show
             'post_status' => 'publish',
             'posts_per_page' => 6,
             'order' => 'DESC',
-            'paged' => $_POST['page']
+            'paged' => $_POST['page'] + 1
         );
         $loop = new WP_Query($args);
         if($loop->have_posts()) :

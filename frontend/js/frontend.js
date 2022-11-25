@@ -2,33 +2,80 @@
 	'use strict';
 	// Publication Load More
 	$('#fast_pubmonthfilter').hide();
-	var page = 2;
-    $('body').on('click', '.fast_load_more', function(){
-		$.ajax({
-			type: 'post',
-			url: publicationLoad.ajaxurl,
-			data: {
-				action: 'fast_publication_loadmore',
-				page: page,
-                security: publicationLoad.security
-			},
-            beforeSend: function(){
-                $('.fast_load_more').addClass('lds-hourglass2');
-                $('.fast_load_more').text('');
-            },
-			success:function(data){
-                $('.fast_load_more').removeClass('lds-hourglass2');
-                $('.fast_load_more').text('Load More Publications');
-                if($.trim(data) != ''){
-				    $('.fast-publication-gridpost').append(data);
-                    page++
-                }else{
-                    $('.fast_load_more').hide();
-					alert('You watched every publications'); 
-                }    
-			}
-		});
-	})
+    
+
+    
+    if($('.fast_load_more').attr('data-page') == 1){
+        $('.site-footer').hide();
+        $('.copyright').hide();
+        $(window).scroll(function(e){
+
+            var page = $('.fast_load_more').data('page');
+            var newPage = page + 1;
+    
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+    
+    
+                $.ajax({
+                    type: 'post',
+                    url: publicationLoad.ajaxurl,
+                    data: {
+                        action: 'fast_publication_loadmore',
+                        page: page,
+                        security: publicationLoad.security
+                    },
+                    beforeSend: function(){
+                        $('.fast_load_more').addClass('lds-hourglass2');
+                        $('.fast_load_more').text('');
+                        $('body').css({"overflow-y":"hidden", "margin-right":"16px"})
+                    },
+                    success:function(data){
+                        $('body').css({"overflow-y":"scroll", "margin-right":"0px"})
+                        $('.fast_load_more').removeClass('lds-hourglass2');
+                        $('.fast_load_more').text('Load More Publications');
+                        if($.trim(data) != ''){
+                            $('.fast-publication-gridpost').append(data);
+                            $('.fast_load_more').data('page', newPage);
+                        }else{
+                            $('.fast_load_more').hide(); 
+                            $('.site-footer').show();
+                            $('.copyright').show();
+                        }    
+                    }
+                });
+    
+            }
+        })
+    }
+
+    
+
+    // $('body').on('click', '.fast_load_more', function(){
+	// 	$.ajax({
+	// 		type: 'post',
+	// 		url: publicationLoad.ajaxurl,
+	// 		data: {
+	// 			action: 'fast_publication_loadmore',
+	// 			page: page,
+    //             security: publicationLoad.security
+	// 		},
+    //         beforeSend: function(){
+    //             $('.fast_load_more').addClass('lds-hourglass2');
+    //             $('.fast_load_more').text('');
+    //         },
+	// 		success:function(data){
+    //             $('.fast_load_more').removeClass('lds-hourglass2');
+    //             $('.fast_load_more').text('Load More Publications');
+    //             if($.trim(data) != ''){
+	// 			    $('.fast-publication-gridpost').append(data);
+    //                 page++
+    //             }else{
+    //                 $('.fast_load_more').hide();
+	// 				alert('You watched every publications'); 
+    //             }    
+	// 		}
+	// 	});
+	// })
 
 	// Publication Search
 	$('#fastajax-publicationform').on('submit', function(){
