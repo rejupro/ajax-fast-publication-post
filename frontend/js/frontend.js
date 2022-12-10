@@ -3,7 +3,6 @@
 	// Publication Load More
 	$('#fast_pubmonthfilter').hide();
     
-
     
     if($('.fast_load_more').attr('data-page') == 1){
         $('.site-footer').hide();
